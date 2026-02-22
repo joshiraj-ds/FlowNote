@@ -1,68 +1,93 @@
-const addBtn = document.getElementById("addBtn");
-const notesContainer = document.getElementById("notesContainer");
+let notes = [];
+let activeNote = null;
 
-document.addEventListener("DOMContentLoaded", loadNotes);
-
-addBtn.addEventListener("click", addNote);
-
-function addNote() {
-    const title = document.getElementById("title").value.trim();
-    const content = document.getElementById("content").value.trim();
-
-    if (!title || !content) {
-        alert("Please fill all fields");
-        return;
+// Load notes when page opens
+function init() {
+    const stored = localStorage.getItem('quicknotes');
+    if (stored) {
+        notes = JSON.parse(stored);
     }
-
-    const note = {
-        id: Date.now(),
-        title,
-        content
-    };
-
-    saveNote(note);
-    displayNote(note);
-
-    document.getElementById("title").value = "";
-    document.getElementById("content").value = "";
+    renderNotesList();
 }
 
-function displayNote(note) {
-    const noteDiv = document.createElement("div");
-    noteDiv.className = "note";
-    noteDiv.setAttribute("data-id", note.id);
+// Save notes to local storage
+function saveToStorage() {
+    localStorage.setItem('quicknotes', JSON.stringify(notes));
+}
 
-    noteDiv.innerHTML = `
-        <button class="delete-btn">X</button>
-        <h3>${note.title}</h3>
-        <p>${note.content}</p>
-    `;
+// Render the notes list
+function renderNotesList() {
+    const list = document.getElementById('notes-list');
+    list.innerHTML = '';
 
-    noteDiv.querySelector(".delete-btn").addEventListener("click", () => {
-        deleteNote(note.id);
-        noteDiv.remove();
+    notes.forEach((note) => {
+        const div = document.createElement('div');
+        div.className = 'note-item' + (activeNote === note ? ' active' : '');
+        div.innerHTML = `
+            <h3>${note.title || 'Untitled'}</h3>
+            <p>${note.body.substring(0, 60) || 'No content'}</p>
+        `;
+        div.onclick = () => selectNote(note);
+        list.appendChild(div);
     });
 
-    notesContainer.appendChild(noteDiv);
+    // Update notes count
+    document.getElementById('notes-count').textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
 }
 
-function saveNote(note) {
-    const notes = getNotes();
-    notes.push(note);
-    localStorage.setItem("flownotes", JSON.stringify(notes));
+// Select a note
+function selectNote(note) {
+    activeNote = note;
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('editor').style.display = 'flex';
+    document.getElementById('note-title').value = note.title;
+    document.getElementById('note-body').value = note.body;
+    renderNotesList();
 }
 
-function loadNotes() {
-    const notes = getNotes();
-    notes.forEach(displayNote);
+// Add new note
+function addNote() {
+    const newNote = {
+        id: Date.now(),
+        title: '',
+        body: ''
+    };
+    notes.unshift(newNote);
+    activeNote = newNote;
+    saveToStorage();
+    renderNotesList();
+    selectNote(newNote);
 }
 
-function deleteNote(id) {
-    let notes = getNotes();
-    notes = notes.filter(note => note.id !== id);
-    localStorage.setItem("flownotes", JSON.stringify(notes));
+// Save current note
+function saveNote() {
+    if (activeNote) {
+        activeNote.title = document.getElementById('note-title').value;
+        activeNote.body = document.getElementById('note-body').value;
+        saveToStorage();
+        renderNotesList();
+    }
 }
 
-function getNotes() {
-    return JSON.parse(localStorage.getItem("flownotes")) || [];
+// Delete current note
+function deleteNote() {
+    if (activeNote) {
+        const index = notes.indexOf(activeNote);
+        if (index > -1 && confirm('Are you sure you want to delete this note?')) {
+            notes.splice(index, 1);
+            activeNote = notes.length > 0 ? notes[0] : null;
+            saveToStorage();
+            renderNotesList();
+            
+            if (activeNote) {
+                selectNote(activeNote);
+            } else {
+                document.getElementById('empty-state').style.display = 'flex';
+                document.getElementById('editor').style.display = 'none';
+            }
+        }
+    }
 }
+
+// Start the app
+init();
