@@ -1,28 +1,46 @@
-# FlowNote - Your second brain for notes and ideas
+# FlowNote
 
-## Problem
-Students need a simple tool to manage notes efficiently.
+FlowNote is a simple web-based note-taking application built using HTML, CSS, and JavaScript.
 
-## Solution
-FlowNote is a lightweight web-based Application. It is a personal app where you can store, organize and connect everything you learn or plan in one place.
+## 🚀 Project Overview
+This project helps users create and manage notes easily in their browser.  
+It is designed as a clean and lightweight productivity tool.
 
-## Tech Stack
+## ✅ Features
+
+### Week 1
+- Basic project structure
+- Note creation functionality
+- Clean UI
+- GitHub deployment
+
+### Week 2
+- Improved UI design
+- Added delete functionality
+- Data saved using LocalStorage
+- Live deployment using GitHub Pages
+
+## 🛠 Tech Stack
 - HTML
 - CSS
 - JavaScript
+- GitHub Pages (for deployment)
 
-## Week 1 Features
-- Project structure created
-- Working note creation system
-- Delete functionality
-- LocalStorage integration
-- Clean UI
+## 🌐 Live Project
+The project is deployed and accessible online.
 
-## Future Plans
-- Add edit notes feature
+## 📚 What I Learned
+- How to structure a web project properly
+- How to use LocalStorage for saving data
+- How to manage versions using GitHub
+- How to deploy a project live
+
+## 🔮 Future Improvements
+Add search functionality
+Add images and links
+Organize ideas
+Offline Access
+Improve UI/UX
+- Add edit note feature
 - Add search functionality
-- Add images and links
-- Organize ideas
-- Offline Access
-- Improve UI/UX
-  
+- Improve responsiveness
