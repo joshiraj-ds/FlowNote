@@ -20,6 +20,14 @@ It is designed as a clean and lightweight productivity tool.
 - Data saved using LocalStorage
 - Live deployment using GitHub Pages
 
+### Week 3
+- Improved UI design
+- Added delete functionality
+- Data saved using LocalStorage
+- Live deployment using GitHub Pages
+- Added search notes functionality
+- Added dark/light Mode
+
 ## 🛠 Tech Stack
 - HTML
 - CSS
