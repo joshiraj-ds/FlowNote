@@ -20,7 +20,7 @@
 
             <p class="tagline">Your second brain for notes and ideas</p>
 
-            
+            <!-- Controls Row -->
             <div class="sidebar-controls">
                 <button class="add-btn" onclick="addNote()">+ Add Note</button>
                 <input type="text" id="search-input" class="search-input" placeholder="🔍 Search...">
@@ -33,8 +33,10 @@
             </div>
         </aside>
 
+        <!-- Main Area -->
         <main class="main">
 
+            <!-- Top Right Toggle -->
             <div class="top-bar">
                 <div class="theme-switch">
                     <input type="checkbox" id="theme-toggle">
@@ -45,6 +47,7 @@
                 </div>
             </div>
 
+            <!-- Empty State -->
             <div id="empty-state" class="empty-state">
                 <div class="empty-icon">📓</div>
                 <h2>Welcome to FlowNote</h2>
@@ -52,6 +55,7 @@
                 <button class="create-btn" onclick="addNote()">+ Create New Note</button>
             </div>
 
+            <!-- Editor -->
             <div id="editor" class="editor" style="display: none;">
                 <div class="editor-header">
                     <input type="text" id="note-title" placeholder="Untitled Note">
