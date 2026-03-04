@@ -1,46 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <title>FlowNote - Your Second Brain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowNote</title>
+    <meta name="description" content="A simple note-taking application">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
+
+        <aside class="sidebar">
             <div class="website-name">
                 <span class="logo">📝</span>
                 <h1>FlowNote</h1>
             </div>
+
             <p class="tagline">Your second brain for notes and ideas</p>
-            <button class="add-btn" onclick="addNote()">+ Add Note</button>
+
+            
+            <div class="sidebar-controls">
+                <button class="add-btn" onclick="addNote()">+ Add Note</button>
+                <input type="text" id="search-input" class="search-input" placeholder="🔍 Search...">
+            </div>
+
             <div id="notes-list" class="notes-list"></div>
+
             <div class="sidebar-footer">
                 <span id="notes-count">0 notes</span>
             </div>
-        </div>
+        </aside>
 
-        <!-- Main Area -->
-        <div class="main">
+        <main class="main">
+
+            <div class="top-bar">
+                <div class="theme-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <label for="theme-toggle" class="slider">
+                        <span class="icon moon">🌙</span>
+                        <span class="icon sun">☀️</span>
+                    </label>
+                </div>
+            </div>
+
             <div id="empty-state" class="empty-state">
                 <div class="empty-icon">📓</div>
                 <h2>Welcome to FlowNote</h2>
                 <p>Create a new one to get started</p>
                 <button class="create-btn" onclick="addNote()">+ Create New Note</button>
             </div>
-            
+
             <div id="editor" class="editor" style="display: none;">
                 <div class="editor-header">
-                    <input type="text" id="note-title" placeholder="Untitled Note" oninput="saveNote()">
-                    <button class="delete-btn" onclick="deleteNote()">🗑️ Delete</button>
+                    <input type="text" id="note-title" placeholder="Untitled Note">
+                    <button class="delete-btn" onclick="deleteNote()">Delete</button>
                 </div>
-                <textarea id="note-body" placeholder="Start writing your thoughts..." oninput="saveNote()"></textarea>
+                <textarea id="note-body" placeholder="Start writing your thoughts..."></textarea>
             </div>
-        </div>
+
+        </main>
     </div>
 
     <script src="app.js"></script>
 </body>
+
 </html>
