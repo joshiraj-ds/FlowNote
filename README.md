@@ -28,6 +28,18 @@ It is designed as a clean and lightweight productivity tool.
 - Added search notes functionality
 - Added dark/light Mode
 
+### Week 4
+- Improved UI design
+- Added delete functionality
+- Data saved using LocalStorage
+- Live deployment using GitHub Pages
+- Added search notes functionality
+- Added dark/light Mode
+- Added Login/Sign Up pages
+- Added features list
+- Added more functions that help users in note taking
+- And more..
+
 ## 🛠 Tech Stack
 - HTML
 - CSS
