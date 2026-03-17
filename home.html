@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FlowNote — Your Second Brain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+        /* ─ TOOLBAR ─ */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 7px 10px;
+            background: #f0f7ff;
+            border: 1px solid rgba(96,165,250,0.18);
+            border-radius: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        body.dark .toolbar {
+            background: rgba(96,165,250,0.05);
+            border-color: rgba(96,165,250,0.1);
+        }
+
+        .tb-btn {
+            width: 30px; height: 30px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #4a6080;
+            transition: all 0.18s;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            position: relative;
+            flex-shrink: 0;
+        }
+        body.dark .tb-btn { color: #7a9fc0; }
+        .tb-btn:hover {
+            background: rgba(96,165,250,0.15);
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+        .tb-btn.active-fmt {
+            background: rgba(96,165,250,0.2);
+            color: #2563eb;
+        }
+
+        .tb-btn.tb-clear {
+            color: #f87171;
+            background: rgba(239,68,68,0.07);
+        }
+        .tb-btn.tb-clear:hover {
+            background: rgba(239,68,68,0.15);
+            color: #ef4444;
+            transform: translateY(-1px);
+        }
+
+        .tb-sep {
+            width: 1px; height: 18px;
+            background: rgba(96,165,250,0.2);
+            margin: 0 3px;
+            flex-shrink: 0;
+        }
+
+        /* Tooltips */
+        .tb-btn::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 7px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a4a;
+            color: #fff;
+            font-size: 0.66rem;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 100;
+        }
+        .tb-btn:hover::after { opacity: 1; }
+
+        /* ── TEXT EDITOR ── */
+        .note-editor-body {
+            flex: 1;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: var(--text-primary);
+            font-weight: 300;
+            min-height: 0;
+            overflow-y: auto;
+            word-break: break-word;
+            transition: color var(--transition);
+        }
+        .note-editor-body:empty::before {
+            content: attr(data-placeholder);
+            color: #c0d4ea;
+            pointer-events: none;
+        }
+        body.dark .note-editor-body { color: #8aa4c8; }
+        body.dark .note-editor-body:empty::before { color: #1e3050; }
+
+        /* Headings */
+        .note-editor-body h1,
+        .note-editor-body h2,
+        .note-editor-body h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--text-primary);
+            margin: 6px 0 2px;
+        }
+        body.dark .note-editor-body h1,
+        body.dark .note-editor-body h2,
+        body.dark .note-editor-body h3 { color: #e2eaf8; }
+
+        .note-editor-body blockquote {
+            border-left: 3px solid #60a5fa;
+            padding-left: 14px;
+            margin: 6px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .note-editor-body ul,
+        .note-editor-body ol {
+            padding-left: 22px;
+            margin: 4px 0;
+        }
+        .note-editor-body hr {
+            border: none;
+            border-top: 1px solid rgba(96,165,250,0.25);
+            margin: 12px 0;
+        }
+        .note-editor-body input[type="checkbox"] {
+            margin-right: 6px;
+            accent-color: #3b82f6;
+        }
+
+        /* ── FIND BAR ── */
+        .find-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f0f7ff;
+            border: 1px solid rgba(96,165,250,0.2);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        body.dark .find-bar { background: rgba(96,165,250,0.05); border-color: rgba(96,165,250,0.1); }
+        .find-bar.open { display: flex; }
+
+        .find-input {
+            border: 1px solid rgba(96,165,250,0.22);
+            border-radius: 7px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            color: var(--text-primary);
+            background: white;
+            width: 150px;
+            transition: border-color 0.2s;
+        }
+        body.dark .find-input { background: #162240; color: #e2eaf8; border-color: rgba(96,165,250,0.15); }
+        .find-input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,0.1); }
+        .find-input::placeholder { color: #a0b8d0; }
+
+        .find-action-btn {
+            padding: 5px 13px;
+            border: none;
+            border-radius: 7px;
+            background: rgba(96,165,250,0.15);
+            color: #3b82f6;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+        }
+        .find-action-btn:hover { background: rgba(96,165,250,0.28); }
+        .find-count { font-size: 0.75rem; color: var(--text-muted); min-width: 70px; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 26px; right: 26px;
+            background: #1a2a4a;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.28s ease;
+            z-index: 9999;
+            pointer-events: none;
+            font-family: 'DM Sans', sans-serif;
+            border-left: 3px solid #60a5fa;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ── FOOTER ── */
+        .editor-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 12px;
+            gap: 8px;
+        }
+        .read-time, .word-count {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            background: rgba(96,165,250,0.08);
+            border: 1px solid rgba(96,165,250,0.12);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-weight: 500;
+        }
+
+        /* ── PIN BTN ── */
+        .pin-btn {
+            padding: 0 14px;
+            height: 34px;
+            border: none;
+            border-radius: 9px;
+            background: rgba(96,165,250,0.1);
+            color: #3b82f6;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .pin-btn.pinned { background: rgba(96,165,250,0.25); color: #2563eb; }
+        .pin-btn:hover  { background: rgba(96,165,250,0.22); }
+
+        /* Override editor to use flex column */
+        .editor {
+            display: none;
+            flex-direction: column;
+        }
+        .editor.visible { display: flex; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-grid"></div>
+        <div class="sidebar-shimmer"></div>
+        <div class="sidebar-particles" id="sidebar-particles"></div>
+
+        <div class="website-name">
+            <div class="logo-mark">📝</div>
+            <h1>FlowNote</h1>
+        </div>
+        <p class="tagline">Your second brain for ideas</p>
+
+        <button class="add-btn" onclick="addNote()">+ New Note</button>
+
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Search notes…">
+        </div>
+
+        <div class="section-label">All Notes</div>
+        <div id="notes-list" class="notes-list"></div>
+
+        <div class="sidebar-footer">
+            <span id="notes-count">0 notes</span>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <div class="top-bar">
+            <div class="theme-toggle-wrap">
+                <span class="toggle-label" id="theme-label">Light</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider">
+                        <span class="slider-icons"><span>🌙</span><span>☀️</span></span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+            <div class="empty-icon">📓</div>
+            <h2>Welcome to FlowNote</h2>
+            <p>Capture your thoughts, ideas, and everything in between.</p>
+            <button class="create-btn" onclick="addNote()">+ Create your first note</button>
+        </div>
+
+        <!-- Editor -->
+        <div id="editor" class="editor">
+
+            <div class="editor-header">
+                <input type="text" class="title-input" id="note-title" placeholder="Untitled Note">
+                <div style="display:flex;gap:8px;flex-shrink:0;align-items:center;">
+                    <button class="pin-btn" id="pin-btn" onclick="togglePin()">📌 Pin</button>
+                    <button class="delete-btn" onclick="deleteNote()" title="Delete note">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-meta" id="note-meta">Just now</div>
+            <div class="divider"></div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="tb-btn" data-tip="Bold (Ctrl+B)"      onmousedown="e(event,'bold')"><b>B</b></button>
+                <button class="tb-btn" data-tip="Italic (Ctrl+I)"    onmousedown="e(event,'italic')"><i>I</i></button>
+                <button class="tb-btn" data-tip="Underline (Ctrl+U)" onmousedown="e(event,'underline')"><u>U</u></button>
+                <button class="tb-btn" data-tip="Strikethrough"      onmousedown="e(event,'strikeThrough')"><s>S</s></button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" data-tip="Heading 1"          onmousedown="e(event,'formatBlock','h2')">H1</button>
+                <button class="tb-btn" data-tip="Heading 2"          onmousedown="e(event,'formatBlock','h3')">H2</button>
+                <button class="tb-btn" data-tip="Normal text"        onmousedown="e(event,'formatBlock','p')">¶</button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" data-tip="Bullet list"        onmousedown="e(event,'insertUnorderedList')">•≡</button>
+                <button class="tb-btn" data-tip="Numbered list"      onmousedown="e(event,'insertOrderedList')">1.</button>
+                <button class="tb-btn" data-tip="Blockquote"         onmousedown="e(event,'formatBlock','blockquote')">❝</button>
+                <button class="tb-btn" data-tip="Divider"            onmousedown="insertHR(event)">—</button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" data-tip="Align Left"         onmousedown="e(event,'justifyLeft')">⬅</button>
+                <button class="tb-btn" data-tip="Align Center"       onmousedown="e(event,'justifyCenter')">☰</button>
+                <button class="tb-btn" data-tip="Align Right"        onmousedown="e(event,'justifyRight')">➡</button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" data-tip="Find & Replace (Ctrl+F)" onmousedown="toggleFind(event)">🔍</button>
+                <button class="tb-btn" data-tip="Copy note"          onmousedown="copyNote(event)">📋</button>
+                <button class="tb-btn" data-tip="Download .txt"      onmousedown="downloadNote(event)">⬇</button>
+                <button class="tb-btn" data-tip="Duplicate note"     onmousedown="duplicateNote(event)">⧉</button>
+                <button class="tb-btn tb-clear" data-tip="Clear content" onmousedown="clearBody(event)">✕</button>
+                <div class="tb-sep"></div>
+                <button class="tb-btn" data-tip="Undo (Ctrl+Z)"      onmousedown="e(event,'undo')">↩</button>
+                <button class="tb-btn" data-tip="Redo (Ctrl+Y)"      onmousedown="e(event,'redo')">↪</button>
+            </div>
+
+            <!-- Find & Replace -->
+            <div class="find-bar" id="find-bar">
+                <input class="find-input" id="find-input"    placeholder="Find…">
+                <input class="find-input" id="replace-input" placeholder="Replace with…">
+                <button class="find-action-btn" onclick="replaceAll()">Replace All</button>
+                <span class="find-count" id="find-count"></span>
+                <button class="find-action-btn" onclick="closeFindBar()" style="margin-left:auto;">✕ Close</button>
+            </div>
+
+            <!-- Rich text area -->
+            <div
+                id="note-body"
+                class="note-editor-body"
+                contenteditable="true"
+                spellcheck="true"
+                data-placeholder="Start writing your thoughts here…"
+            ></div>
+
+            <div class="editor-footer">
+                <span class="read-time"  id="read-time">0 min read</span>
+                <span class="word-count" id="word-count">0 words</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!--  DELETE MODAL  -->
+<div class="modal-overlay" id="delete-modal" onclick="cancelDelete()">
+    <div class="modal-box delete-modal-box" onclick="event.stopPropagation()">
+        <div class="modal-side modal-side-red">
+            <div class="modal-side-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4h6v2"/>
+                </svg>
+            </div>
+        </div>
+        <div class="modal-content">
+            <h3 class="modal-title">Delete Note?</h3>
+            <p class="modal-desc">You're about to permanently delete <span id="modal-note-title" class="modal-hl-red"></span>. This cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="mbtn mbtn-cancel" onclick="cancelDelete()">Cancel</button>
+                <button class="mbtn mbtn-red" onclick="confirmDelete()">Delete Forever</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CLEAR MODAL  -->
+<div class="modal-overlay" id="clear-modal" onclick="cancelClear()">
+    <div class="modal-box clear-modal-box" onclick="event.stopPropagation()">
+        <div class="modal-side modal-side-blue">
+            <div class="modal-side-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </div>
+        </div>
+        <div class="modal-content">
+            <h3 class="modal-title">Clear Content?</h3>
+            <p class="modal-desc">All written content will be erased. The title stays. This cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="mbtn mbtn-cancel" onclick="cancelClear()">Cancel</button>
+                <button class="mbtn mbtn-blue" onclick="confirmClear()">Clear Content</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ── OVERLAY ── */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(8, 15, 30, 0.55);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+    .modal-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* ── BOX ── */
+    .modal-box {
+        display: flex;
+        flex-direction: row;
+        width: 480px;
+        max-width: 92vw;
+        border-radius: 18px;
+        overflow: hidden;
+        font-family: 'DM Sans', sans-serif;
+        transform: scale(0.92) translateY(16px);
+        transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .modal-overlay.open .modal-box {
+        transform: scale(1) translateY(0);
+    }
+
+    .delete-modal-box {
+        background: #fff;
+        box-shadow: 0 24px 60px rgba(239,68,68,0.16), 0 4px 20px rgba(0,0,0,0.1);
+        border: 1px solid rgba(239,68,68,0.12);
+    }
+    body.dark .delete-modal-box {
+        background: #141020;
+        border-color: rgba(239,68,68,0.18);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+
+    .clear-modal-box {
+        background: #fff;
+        box-shadow: 0 24px 60px rgba(59,130,246,0.14), 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid rgba(96,165,250,0.14);
+    }
+    body.dark .clear-modal-box {
+        background: #0c1525;
+        border-color: rgba(96,165,250,0.16);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+
+    /* ── SIDE ACCENT ── */
+    .modal-side {
+        width: 80px;
+        min-width: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-side-red  { background: linear-gradient(170deg, #f87171, #dc2626); }
+    .modal-side-blue { background: linear-gradient(170deg, #60a5fa, #2563eb); }
+
+    .modal-side-icon {
+        width: 48px; height: 48px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── CONTENT ── */
+    .modal-content {
+        flex: 1;
+        padding: 26px 24px 22px;
+    }
+
+    .modal-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a2a4a;
+        margin-bottom: 8px;
+    }
+    body.dark .modal-title { color: #e2eaf8; }
+
+    .modal-desc {
+        font-size: 0.82rem;
+        color: #7a90a8;
+        line-height: 1.65;
+        margin-bottom: 20px;
+    }
+    body.dark .modal-desc { color: #3a5070; }
+
+    .modal-hl-red  { font-weight: 700; color: #ef4444; }
+
+    /* ── BTNS ── */
+    .modal-actions { display: flex; gap: 8px; }
+
+    .mbtn {
+        flex: 1;
+        height: 40px;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s;
+        border: none;
+        letter-spacing: 0.02em;
+    }
+
+    .mbtn-cancel {
+        background: transparent;
+        border: 1.5px solid #dde6f0;
+        color: #7a90a8;
+    }
+    .mbtn-cancel:hover {
+        border-color: #b0c4d8;
+        color: #4a6080;
+        background: #f5f8fc;
+    }
+    body.dark .mbtn-cancel {
+        border-color: rgba(255,255,255,0.08);
+        color: #3a5070;
+    }
+    body.dark .mbtn-cancel:hover {
+        border-color: rgba(255,255,255,0.15);
+        color: #6a8098;
+        background: rgba(255,255,255,0.04);
+    }
+
+    .mbtn-red {
+        background: linear-gradient(135deg, #f87171, #ef4444);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(239,68,68,0.3);
+    }
+    .mbtn-red:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 7px 20px rgba(239,68,68,0.45);
+    }
+    .mbtn-red:active { transform: translateY(0); }
+
+    .mbtn-blue {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+    }
+    .mbtn-blue:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 7px 20px rgba(59,130,246,0.45);
+    }
+    .mbtn-blue:active { transform: translateY(0); }
+</style>
+
+<script>
+    // Sidebar particles
+    const pc = document.getElementById('sidebar-particles');
+    for (let i = 0; i < 24; i++) {
+        const p = document.createElement('div');
+        p.className = 's-particle';
+        const s = Math.random() * 3 + 1;
+        p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:${Math.random()*15}%;animation-duration:${Math.random()*12+7}s;animation-delay:${Math.random()*10}s;`;
+        pc.appendChild(p);
+    }
+
+    // Save/restore selection
+    let savedRange = null;
+
+    document.getElementById('note-body').addEventListener('mouseup',  saveSelection);
+    document.getElementById('note-body').addEventListener('keyup',    saveSelection);
+    document.getElementById('note-body').addEventListener('keydown',  saveSelection);
+
+    function saveSelection() {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    }
+
+    function restoreSelection() {
+        const body = document.getElementById('note-body');
+        body.focus();
+        if (savedRange) {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+        }
+    }
+
+    // Toolbar execCommand wrapper
+    function e(event, cmd, val) {
+        event.preventDefault();
+        restoreSelection();
+        document.execCommand(cmd, false, val || null);
+        saveSelection();
+        debounceSave();
+    }
+
+    function insertHR(event) {
+        event.preventDefault();
+        restoreSelection();
+        document.execCommand('insertHTML', false, '<hr>');
+        saveSelection();
+        debounceSave();
+    }
+</script>
+<script src="app.js"></script>
+</body>
+</html>
