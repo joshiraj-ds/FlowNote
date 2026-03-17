@@ -40,7 +40,7 @@ It is designed as a clean and lightweight productivity tool.
 - Added more functions that help users in note taking
 - And more..
 
-## Ongoing Development:
+Ongoing Development:
 This project is still being improved. Some features are currently under development and will be available in upcoming versions.
 
 ## 🛠 Tech Stack
