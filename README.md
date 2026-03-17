@@ -40,6 +40,9 @@ It is designed as a clean and lightweight productivity tool.
 - Added more functions that help users in note taking
 - And more..
 
+##Ongoing Development:
+This project is still being improved. Some features are currently under development and will be available in upcoming versions.
+
 ## 🛠 Tech Stack
 - HTML
 - CSS
@@ -64,3 +67,4 @@ Improve UI/UX
 - Add edit note feature
 - Add search functionality
 - Improve responsiveness
+App making
