@@ -41,7 +41,7 @@ It is designed as a clean and lightweight productivity tool.
 - And more..
 
 Ongoing Development:
-This project is still being improved. Some features are currently under development and will be available in upcoming versions.
+This project is still being improved. Some features are currently under development.
 
 ## 🛠 Tech Stack
 - HTML
